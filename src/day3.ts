@@ -4,7 +4,8 @@ type Multiplicands = {
   left: number;
   right: number;
 };
-const parseFileContents = (fileContents: string): Multiplicands[] => {
+
+const parseMultiplicants = (fileContents: string): Multiplicands[] => {
   const regex = /mul\(\d+,\d+\)/gm;
   const match = fileContents.match(regex);
   if (!match) {
@@ -22,6 +23,23 @@ const parseFileContents = (fileContents: string): Multiplicands[] => {
   return result;
 };
 
+const parseMultiplicantsPartTwo = (fileContents: string): Multiplicands[] => {
+  const data = fileContents.split('do()');
+
+  const results = data.flatMap((item) => {
+    const parts = item.split("don't()");
+    if (parts.length > 1) {
+      // console.log(`\t${parts[0]}`);
+      return parseMultiplicants(parts[0]);
+    } else {
+      // console.log(`\t${item}`);
+      return parseMultiplicants(item);
+    }
+  });
+
+  return results;
+};
+
 const calculateTotal = (list: Multiplicands[]): number => {
   let total = 0;
   list.forEach((data) => {
@@ -33,10 +51,14 @@ const calculateTotal = (list: Multiplicands[]): number => {
 const main = () => {
   const filename = 'day3/data.txt';
   const fileContents = readFileContents(filename);
-  const parsedData = parseFileContents(fileContents);
 
-  const partOne = calculateTotal(parsedData);
+  const parsedDataPartOne = parseMultiplicants(fileContents);
+  const partOne = calculateTotal(parsedDataPartOne);
   console.log({ partOne });
+
+  const parsedDataPartTwo = parseMultiplicantsPartTwo(fileContents);
+  const partTwo = calculateTotal(parsedDataPartTwo);
+  console.log({ partTwo });
 };
 
 main();
