@@ -1,19 +1,8 @@
-import fs from 'node:fs';
-import path from 'path';
+import { readFileContents } from './utils/file';
 
 type Data = {
   listA: number[];
   listB: number[];
-};
-
-const readInputData = (filename: string): string => {
-  try {
-    const filePath = path.join(__dirname, '..', 'data', filename);
-    const data = fs.readFileSync(filePath);
-    return data.toString('utf8');
-  } catch (error) {
-    throw new Error(`Unable to read file "${filename}". ${error}`);
-  }
 };
 
 const parseInputData = (input: string): Data => {
@@ -100,7 +89,7 @@ const calculateTotal = (list: number[]): number => {
 
 const main = () => {
   const filename = 'day1/data.txt';
-  const input = readInputData(filename);
+  const input = readFileContents(filename);
   const data = parseInputData(input);
 
   // Part One
