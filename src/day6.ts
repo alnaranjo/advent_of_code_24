@@ -71,7 +71,7 @@ const parseFileContents = (fileContents: string): Data => {
 const toString = (position: Vector2): string => `${position.x},${position.y}`;
 
 const solvePartOne = (data: Data): number => {
-  const position = data.start;
+  let position = data.start;
   let direction = data.direction;
 
   const visitedPositions: Set<string> = new Set();
@@ -97,8 +97,7 @@ const solvePartOne = (data: Data): number => {
     if (isObstacle(nextPosition, data.obstacles)) {
       direction = rotate90(direction);
     } else {
-      position.x = nextPosition.x;
-      position.y = nextPosition.y;
+      position = nextPosition;
       visitedPositions.add(toString(position));
     }
   }
@@ -106,8 +105,64 @@ const solvePartOne = (data: Data): number => {
   return visitedPositions.size;
 };
 
+const isLooping = (data: Data, newObstacle: Vector2): boolean => {
+  let position = data.start;
+  let direction = data.direction;
+  const obstacles = [...data.obstacles, newObstacle];
+
+  const visitedPositions: Set<string> = new Set();
+  visitedPositions.add(`${toString(position)}-${toString(direction)}`);
+
+  while (true) {
+    const nextPosition = {
+      x: position.x + direction.x,
+      y: position.y + direction.y,
+    };
+
+    // check boundaries
+    if (
+      nextPosition.y < 0 ||
+      nextPosition.x >= data.width ||
+      nextPosition.y >= data.height ||
+      nextPosition.x < 0
+    ) {
+      break;
+    }
+
+    // check obstacles
+    if (isObstacle(nextPosition, obstacles)) {
+      direction = rotate90(direction);
+    } else {
+      position = nextPosition;
+      if (
+        visitedPositions.has(`${toString(position)}-${toString(direction)}`)
+      ) {
+        return true;
+      }
+      visitedPositions.add(`${toString(position)}-${toString(direction)}`);
+    }
+  }
+
+  return false;
+};
+
 const solvePartTwo = (data: Data): number => {
-  return -1;
+  let total = 0;
+
+  for (let y = 0; y < data.height; ++y) {
+    for (let x = 0; x < data.width; ++x) {
+      const position = { x, y };
+      if (isObstacle(position, data.obstacles)) {
+        continue;
+      }
+
+      if (isLooping(data, position)) {
+        total += 1;
+      }
+    }
+  }
+
+  return total;
 };
 
 const main = () => {
@@ -118,8 +173,8 @@ const main = () => {
   const partOne = solvePartOne(parsedData);
   console.log({ partOne });
 
-  // const partTwo = solvePartTwo(parsedData);
-  // console.log({ partTwo });
+  const partTwo = solvePartTwo(parsedData);
+  console.log({ partTwo });
 };
 
 main();
