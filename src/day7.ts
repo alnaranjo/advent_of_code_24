@@ -19,7 +19,7 @@ const parseFileContents = (fileContents: string): Data => {
   return result;
 };
 
-type Operand = '+' | '*';
+type Operand = '+' | '*' | '||';
 type Permutation = (number | Operand)[];
 
 const getPermutations = (
@@ -65,6 +65,9 @@ const isValid = (permutation: Permutation, testValue: number): boolean => {
     } else if (operand === '*') {
       total *= number;
     }
+    if (operand === '||') {
+      total = Number(`${total}${number}`);
+    }
   }
 
   return total === testValue;
@@ -87,7 +90,19 @@ const solvePartOne = (data: Data): number => {
 };
 
 const solvePartTwo = (data: Data): number => {
-  return -1;
+  let total = 0;
+
+  for (const equation of data) {
+    const permutations = getPermutations(equation.operators, ['+', '*', '||']);
+    for (const permutation of permutations) {
+      if (isValid(permutation, equation.testValue)) {
+        total += equation.testValue;
+        break;
+      }
+    }
+  }
+
+  return total;
 };
 
 const main = () => {
