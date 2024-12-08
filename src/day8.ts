@@ -53,7 +53,10 @@ const isInBounds = (v: Vector2, width: number, height: number): boolean => {
   return v.x >= 0 && v.x < width && v.y >= 0 && v.y < height;
 };
 
-const getAntinodes = ([v1, v2]: [Vector2, Vector2], data: Data): Vector2[] => {
+const getAntinodesPartOne = (
+  [v1, v2]: [Vector2, Vector2],
+  data: Data
+): Vector2[] => {
   const distance = {
     x: v2.x - v1.x,
     y: v2.y - v1.y,
@@ -62,13 +65,39 @@ const getAntinodes = ([v1, v2]: [Vector2, Vector2], data: Data): Vector2[] => {
   const p1 = { x: v1.x - distance.x, y: v1.y - distance.y };
   const p2 = { x: v2.x + distance.x, y: v2.y + distance.y };
 
-  const result: Vector2[] = [];
+  const result: Vector2[] = [v1];
   if (isInBounds(p1, data.width, data.height)) {
     result.push(p1);
   }
 
   if (isInBounds(p2, data.width, data.height)) {
     result.push(p2);
+  }
+
+  return result;
+};
+
+const getAntinodesPartTwo = (
+  [v1, v2]: [Vector2, Vector2],
+  data: Data
+): Vector2[] => {
+  const distance = {
+    x: v2.x - v1.x,
+    y: v2.y - v1.y,
+  };
+
+  let p1 = { x: v1.x - distance.x, y: v1.y - distance.y };
+  let p2 = { x: v2.x + distance.x, y: v2.y + distance.y };
+
+  const result: Vector2[] = [v1, v2];
+  while (isInBounds(p1, data.width, data.height)) {
+    result.push(p1);
+    p1 = { x: p1.x - distance.x, y: p1.y - distance.y };
+  }
+
+  while (isInBounds(p2, data.width, data.height)) {
+    result.push(p2);
+    p2 = { x: p2.x + distance.x, y: p2.y + distance.y };
   }
 
   return result;
@@ -82,20 +111,25 @@ const solvePartOne = (data: Data): number => {
   for (const [_, coordinates] of data.antenas.entries()) {
     const permutations = getPermutations(coordinates);
     for (const permutation of permutations) {
-      const antinodes = getAntinodes(permutation, data);
+      const antinodes = getAntinodesPartOne(permutation, data);
       antinodes.forEach((value) => totalAntinodes.add(toString(value)));
     }
   }
-
-  console.log(totalAntinodes);
 
   return totalAntinodes.size;
 };
 
 const solvePartTwo = (data: Data): number => {
-  let total = 0;
+  let totalAntinodes: Set<string> = new Set();
+  for (const [_, coordinates] of data.antenas.entries()) {
+    const permutations = getPermutations(coordinates);
+    for (const permutation of permutations) {
+      const antinodes = getAntinodesPartTwo(permutation, data);
+      antinodes.forEach((value) => totalAntinodes.add(toString(value)));
+    }
+  }
 
-  return total;
+  return totalAntinodes.size;
 };
 
 const main = () => {
