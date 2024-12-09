@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild ./src/*.ts --bundle --platform=node --target=node20 --outdir=./build"
+    "build": "esbuild ./src/*.ts --bundle --platform=node --target=node20 --outdir=./build --sourcemap"
   },
   "keywords": [],
   "author": "",
