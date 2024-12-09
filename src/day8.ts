@@ -1,4 +1,3 @@
-import { permission } from 'process';
 import { readFileContents } from './utils/file';
 
 type Vector2 = {
