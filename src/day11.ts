@@ -1,4 +1,3 @@
-import { count } from 'console';
 import { readFileContents } from './utils/file';
 
 const parseFileContents = (fileContents: string): number[] => {
@@ -13,9 +12,9 @@ const performIteration = (list: number[]): number[] => {
     const current = list[i];
     const currentString = `${current}`;
 
-    if (current == 0) {
+    if (current === 0) {
       result.push(1);
-    } else if (currentString.length % 2 == 0) {
+    } else if (currentString.length % 2 === 0) {
       const index = currentString.length / 2;
       const left = parseInt(currentString.substring(0, index), 10);
       const right = parseInt(currentString.substring(index), 10);
@@ -78,7 +77,7 @@ const solvePartTwo = (list: number[]): number => {
   }
 
   let total = 0;
-  for (const [_, count] of iteration) {
+  for (const [_, count] of iteration.entries()) {
     total += count;
   }
 
