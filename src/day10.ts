@@ -29,11 +29,11 @@ const parseFileContents = (fileContents: string): Data => {
   return { map, width, height, trailHeads };
 };
 
-const predicate = (current: Node, neighbor: Node): boolean => {
+const predicate = (current: Node<number>, neighbor: Node<number>): boolean => {
   return neighbor.value - 1 === current.value;
 };
 
-const getScoreForPaths = (paths: Node[][]): number => {
+const getScoreForPaths = (paths: Node<number>[][]): number => {
   const uniqueKeys = new Set<string>();
   paths.forEach((path) => {
     const lasNode = path[path.length - 1];
