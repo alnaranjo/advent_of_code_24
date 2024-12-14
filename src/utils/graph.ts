@@ -1,24 +1,24 @@
 import { Vector2 } from './vector2';
 
-export type Node = { key: string; value: number; neighbors: Node[] };
-export type Graph = Map<string, Node>;
+export type Node<T> = { key: string; value: T; neighbors: Node<T>[] };
+export type Graph<T> = Map<string, Node<T>>;
 
 export const getNodeKey = (x: number, y: number): string => `${x},${y}`;
 
-export const getNode = (
-  graph: Graph,
+export const getNode = <T>(
+  graph: Graph<T>,
   x: number,
   y: number
-): Node | undefined => {
+): Node<T> | undefined => {
   const key = getNodeKey(x, y);
   return graph.get(key);
 };
 
-export const createGraph = (grid: number[][]): Graph => {
+export const createGraph = <T>(grid: T[][]): Graph<T> => {
   const height = grid.length;
   const width = grid[0].length;
 
-  const graph: Graph = new Map();
+  const graph: Graph<T> = new Map();
 
   const directions: Vector2[] = [
     { x: 0, y: -1 }, // up
@@ -31,7 +31,7 @@ export const createGraph = (grid: number[][]): Graph => {
   for (let y = 0; y < height; ++y) {
     for (let x = 0; x < width; ++x) {
       const key = getNodeKey(x, y);
-      const node: Node = { key, value: grid[y][x], neighbors: [] };
+      const node: Node<T> = { key, value: grid[y][x], neighbors: [] };
       graph.set(key, node);
     }
   }
@@ -69,21 +69,21 @@ export const createGraph = (grid: number[][]): Graph => {
   return graph;
 };
 
-export type TraversalParams = {
-  graph: Graph;
+export type TraversalParams<T> = {
+  graph: Graph<T>;
   startKey: string;
   target?: number;
-  predicate?: (current: Node, neighbor: Node) => boolean;
+  predicate?: (current: Node<T>, neighbor: Node<T>) => boolean;
 };
 
-export const graphBFS = ({
+export const graphBFS = <T>({
   graph,
   startKey,
   target,
   predicate,
-}: TraversalParams): Node[] => {
-  const queue: { node: Node; path: Node[] }[] = [];
-  const visited = new Set<Node>();
+}: TraversalParams<T>): Node<T>[] => {
+  const queue: { node: Node<T>; path: Node<T>[] }[] = [];
+  const visited = new Set<Node<T>>();
 
   const startNode = graph.get(startKey);
   if (!startNode) {
@@ -114,14 +114,14 @@ export const graphBFS = ({
   return [];
 };
 
-export const graphDFS = ({
+export const graphDFS = <T>({
   graph,
   startKey,
   target,
   predicate,
-}: TraversalParams): Node[] => {
-  const stack: { node: Node; path: Node[] }[] = [];
-  const visited = new Set<Node>();
+}: TraversalParams<T>): Node<T>[] => {
+  const stack: { node: Node<T>; path: Node<T>[] }[] = [];
+  const visited = new Set<Node<T>>();
 
   const startNode = graph.get(startKey);
   if (!startNode) {
@@ -152,25 +152,25 @@ export const graphDFS = ({
   return [];
 };
 
-export const findAllPaths = ({
+export const findAllPaths = <T>({
   graph,
   startKey,
   target,
   predicate,
 }: {
-  graph: Graph;
+  graph: Graph<T>;
   startKey: string;
   target: number;
-  predicate: (current: Node, neighbor: Node) => boolean;
+  predicate: (current: Node<T>, neighbor: Node<T>) => boolean;
 }) => {
   const startNode = graph.get(startKey);
   if (!startNode) {
     return [];
   }
 
-  const allPaths: Node[][] = [];
+  const allPaths: Node<T>[][] = [];
 
-  const dfs = (current: Node, path: Node[]) => {
+  const dfs = (current: Node<T>, path: Node<T>[]) => {
     const newPath = [...path, current];
 
     if (current.value === target) {
