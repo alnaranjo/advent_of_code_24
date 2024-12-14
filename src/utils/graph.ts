@@ -5,6 +5,21 @@ export type Graph<T> = Map<string, Node<T>>;
 
 export const getNodeKey = (x: number, y: number): string => `${x},${y}`;
 
+export const parseNodeKey = (key: string): Vector2 => {
+  const values = key.split(',');
+  if (values.length !== 2) {
+    throw new Error('Unable to parse key. Invalid key provided');
+  }
+  try {
+    return {
+      x: parseInt(values[0], 10),
+      y: parseInt(values[1], 10),
+    };
+  } catch (error) {
+    throw new Error('Unable to parse node key. Invalid coordinate');
+  }
+};
+
 export const getNode = <T>(
   graph: Graph<T>,
   x: number,
@@ -95,6 +110,7 @@ export const graphBFS = <T>({
 
   while (queue.length > 0) {
     const { node: current, path } = queue.shift()!;
+
     if (target !== undefined && current.value === target) {
       return path;
     }
@@ -111,7 +127,7 @@ export const graphBFS = <T>({
     }
   }
 
-  return [];
+  return Array.from(visited);
 };
 
 export const graphDFS = <T>({
@@ -133,6 +149,7 @@ export const graphDFS = <T>({
 
   while (stack.length > 0) {
     const { node: current, path } = stack.pop()!;
+
     if (target !== undefined && current.value === target) {
       return path;
     }
@@ -149,7 +166,7 @@ export const graphDFS = <T>({
     }
   }
 
-  return [];
+  return Array.from(visited);
 };
 
 export const findAllPaths = <T>({
@@ -160,7 +177,7 @@ export const findAllPaths = <T>({
 }: {
   graph: Graph<T>;
   startKey: string;
-  target: number;
+  target?: number;
   predicate: (current: Node<T>, neighbor: Node<T>) => boolean;
 }) => {
   const startNode = graph.get(startKey);
@@ -173,7 +190,7 @@ export const findAllPaths = <T>({
   const dfs = (current: Node<T>, path: Node<T>[]) => {
     const newPath = [...path, current];
 
-    if (current.value === target) {
+    if (target === undefined || current.value === target) {
       allPaths.push(newPath);
     }
 
@@ -187,4 +204,24 @@ export const findAllPaths = <T>({
   dfs(startNode, []);
 
   return allPaths;
+};
+
+export const arePathsEqual = <T>(
+  path1: Node<T>[],
+  path2: Node<T>[]
+): boolean => {
+  const set1 = new Set(path1.map((node) => node.key));
+  const set2 = new Set(path2.map((node) => node.key));
+
+  if (set1.size !== set2.size) {
+    return false;
+  }
+
+  for (const key of set1) {
+    if (!set2.has(key)) {
+      return false;
+    }
+  }
+
+  return true;
 };
