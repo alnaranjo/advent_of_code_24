@@ -1,5 +1,4 @@
 import { readFileContents } from './utils/file';
-import { calculateExtendedGCD } from './utils/math';
 import { Vector2 } from './utils/vector2';
 
 type Machine = {
