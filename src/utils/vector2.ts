@@ -13,7 +13,7 @@ export const isVector2InBounds = (
 
 export const vector2ToString = (v: Vector2) => `${v.x},${v.y}`;
 
-export const vector2FromString = (v: string): Vector2 => {
+export const parseVector2 = (v: string): Vector2 => {
   const values = v.split(',');
   if (values.length !== 2) {
     throw new Error('Unable to parse vector2. Invalid number of elements');
