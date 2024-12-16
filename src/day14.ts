@@ -1,5 +1,5 @@
 import { readFileContents } from './utils/file';
-import { parseVector2, Vector2 } from './utils/vector2';
+import { parseVector2, Vector2, vector2ToString } from './utils/vector2';
 
 // const WIDTH = 11;
 // const HEIGHT = 7;
@@ -28,6 +28,27 @@ const parseFileContents = (fileContents: string): Robot[] => {
   });
 
   return results;
+};
+
+const printRobots = (robots: Robot[]) => {
+  const map: Map<string, boolean> = new Map();
+
+  for (const robot of robots) {
+    const key = vector2ToString(robot.position);
+    map.set(key, true);
+  }
+
+  for (let y = 0; y < HEIGHT; ++y) {
+    for (let x = 0; x < WIDTH; ++x) {
+      const key = `${x},${y}`;
+      if (map.has(key)) {
+        process.stdout.write('#');
+      } else {
+        process.stdout.write('.');
+      }
+    }
+    console.log();
+  }
 };
 
 const runSimulation = ({
@@ -65,6 +86,63 @@ const runSimulation = ({
   }
 
   return results;
+};
+
+const printPossibleTree = (robots: Robot[], iteration: number) => {
+  const seen: Map<string, boolean> = new Map();
+  let overlaps = false;
+  for (const { position } of robots) {
+    const key = vector2ToString(position);
+    if (seen.has(key)) {
+      overlaps = true;
+      break;
+    } else {
+      seen.set(key, true);
+    }
+  }
+
+  if (!overlaps) {
+    console.clear();
+    console.log(`=== iteration: ${iteration} ===`);
+    printRobots(robots);
+  }
+};
+
+const runSimulation2 = ({
+  robots,
+  iterations,
+}: {
+  robots: Robot[];
+  iterations: number;
+}) => {
+  const results = [...robots];
+
+  for (let i = 1; i < iterations; ++i) {
+    for (let robotIndex = 0; robotIndex < results.length; ++robotIndex) {
+      const { position, velocity } = results[robotIndex];
+      let newPosition = { ...position };
+
+      newPosition.x += velocity.x;
+      newPosition.y += velocity.y;
+
+      // wrap around
+      if (newPosition.x < 0) {
+        newPosition.x += WIDTH;
+      } else if (newPosition.x >= WIDTH) {
+        newPosition.x -= WIDTH;
+      }
+
+      if (newPosition.y < 0) {
+        newPosition.y += HEIGHT;
+      } else if (newPosition.y >= HEIGHT) {
+        newPosition.y -= HEIGHT;
+      }
+
+      results[robotIndex] = { position: newPosition, velocity };
+    }
+
+    printPossibleTree(results, i);
+  }
 };
 
 const countRobotsPerQuadrant = (
@@ -115,9 +193,8 @@ const solvePartOne = (robots: Robot[]): number => {
   return total;
 };
 
-const solvePartTwo = (data: Robot[]): number => {
-  let total = 0;
-  return total;
+const solvePartTwo = (robots: Robot[]) => {
+  runSimulation2({ robots, iterations: 10000 });
 };
 
 const main = () => {
@@ -128,8 +205,7 @@ const main = () => {
   const partOne = solvePartOne(parsedData);
   console.log({ partOne });
 
-  const partTwo = solvePartTwo(parsedData);
-  console.log({ partTwo });
+  solvePartTwo(parsedData);
 };
 
 main();
