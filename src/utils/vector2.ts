@@ -24,3 +24,12 @@ export const parseVector2 = (v: string): Vector2 => {
     throw new Error('Unable to parse vetor2');
   }
 };
+
+export const rotate90 = (
+  direction: Vector2,
+  clockwise: boolean = true
+): Vector2 => {
+  return clockwise
+    ? { x: -direction.y, y: direction.x }
+    : { x: direction.y, y: direction.x };
+};

@@ -1,9 +1,5 @@
 import { readFileContents } from './utils/file';
-
-type Vector2 = {
-  x: number;
-  y: number;
-};
+import { Vector2, rotate90 } from './utils/vector2';
 
 type Data = {
   width: number;
@@ -34,12 +30,6 @@ const isObstacle = (position: Vector2, positions: Vector2[]): boolean => {
     (item) => item.x === position.x && item.y === position.y
   );
   return found;
-};
-
-const rotate90 = (direction: Vector2, clockwise: boolean = true): Vector2 => {
-  return clockwise
-    ? { x: -direction.y, y: direction.x }
-    : { x: direction.y, y: direction.x };
 };
 
 const parseFileContents = (fileContents: string): Data => {
