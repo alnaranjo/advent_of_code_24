@@ -92,7 +92,7 @@ const getCost = (
 
 type Path = { path: Node<string>[]; cost: number };
 
-const findBestPath = ({
+const findAllPaths = ({
   graph,
   start,
   end,
@@ -110,7 +110,7 @@ const findBestPath = ({
     toNode: Node<string>,
     currentDirection: Direction
   ) => number;
-}): Path => {
+}): Path[] => {
   const startKey = getNodeKey(start.x, start.y);
   const endKey = getNodeKey(end.x, end.y);
 
@@ -136,17 +136,9 @@ const findBestPath = ({
     direction: initialDirection,
   });
 
-  let bestCost = Number.MAX_SAFE_INTEGER;
-  let bestPath: Node<string>[] = [];
-
+  const allPaths: Path[] = [];
   while (priorityQueue.size() > 0) {
-    // sort queue by lowest distance
     const current = priorityQueue.pop()!;
-    // const stateKey = `${current.key}:${current.direction}`;
-
-    // if (distances.has(stateKey)) {
-    //   continue;
-    // }
 
     // Path found, reconstrtuct path
     if (current.key === endKey) {
@@ -163,12 +155,7 @@ const findBestPath = ({
         backtrack = previous.get(`${backtrack.key}:${backtrack.direction}`)!;
       }
 
-      console.log({ distance: current.distance });
-
-      if (current.distance < bestCost) {
-        bestCost = current.distance;
-        bestPath = path;
-      }
+      allPaths.push({ path, cost: current.distance });
       continue;
     }
 
@@ -209,7 +196,7 @@ const findBestPath = ({
     }
   }
 
-  return { path: bestPath, cost: bestCost };
+  return allPaths;
 };
 
 const parseFileContents = (fileContents: string): Data => {
@@ -252,10 +239,8 @@ const printMap = (map: string[][]) => {
 };
 
 const solvePartOne = (data: Data): number => {
-  printMap(data.map);
-
   const graph = createGraph(data.map);
-  const path = findBestPath({
+  const paths = findAllPaths({
     graph,
     start: data.start,
     end: data.end,
@@ -264,19 +249,34 @@ const solvePartOne = (data: Data): number => {
     getCost,
   });
 
-  console.log({ path });
-
-  const total = 0;
-  return total;
+  paths.sort((a, b) => a.cost - b.cost);
+  return paths[0].cost;
 };
 
 const solvePartTwo = (data: Data): number => {
-  const total = 0;
-  return total;
+  const graph = createGraph(data.map);
+  const paths = findAllPaths({
+    graph,
+    start: data.start,
+    end: data.end,
+    initialDirection: data.initialDirection,
+    canTraverse,
+    getCost,
+  });
+
+  const exploredNodes: Set<string> = new Set();
+  for (const path of paths) {
+    console.log({ path: `${path.path.length}`, cost: path.cost });
+    for (const node of path.path) {
+      exploredNodes.add(node.key);
+    }
+  }
+
+  return exploredNodes.size;
 };
 
 const main = () => {
-  const filename = 'day16/data.txt';
+  const filename = 'day16/test.txt';
   const fileContents = readFileContents(filename);
   const parsedData = parseFileContents(fileContents);
 
