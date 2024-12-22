@@ -28,6 +28,7 @@ const parseFileContents = (fileContents: string): Data => {
   const movementsString = sections[1];
 
   const map = mapString.split('\n').map((line) => line.split(''));
+
   const height = map.length;
   const width = map[0].length;
 
@@ -255,17 +256,12 @@ const processMovements = (data: Data): string[][] => {
 
   // printMapState({ map, title: 'Initial state:' });
 
-  console.log({ totalMovements: movements.length });
-
-  let steps = 0;
   for (const movement of movements) {
     const canMove = checkCanMove({ map, position, movement });
     if (canMove) {
       position = move({ map, position, movement });
     }
 
-    steps += 1;
-    console.log({ steps });
     // printMapState({ map, title: `Move ${movement}:` });
     // if (!canMove) {
     //   console.log(`can't move ${movement}\n`);
@@ -275,7 +271,10 @@ const processMovements = (data: Data): string[][] => {
   return map;
 };
 
-const calculateGPSCoordinates = (map: string[][]): number[] => {
+const calculateGPSCoordinates = (
+  map: string[][],
+  boxTile: string = 'O'
+): number[] => {
   const height = map.length;
   const width = map[0].length;
 
@@ -293,6 +292,89 @@ const calculateGPSCoordinates = (map: string[][]): number[] => {
   return coordinates;
 };
 
+const generateWideMap = (map: string[][]): string[][] => {
+  const wideMap = map.map((row) =>
+    row.map((item) => {
+      if (item === '.') {
+        return '..';
+      } else if (item === '#') {
+        return '##';
+      } else if (item === 'O') {
+        return '[]';
+      }
+
+      return '@.';
+    })
+  );
+  return wideMap;
+};
+
+const checkCanMovePartTwo = ({
+  map,
+  position,
+  movement,
+}: {
+  map: string[][];
+  position: Vector2;
+  movement: Movement;
+}): boolean => {
+  const width = map[0].length;
+  const height = map.length;
+
+  // out of bounds
+  if (!isInBounds({ position, width, height })) {
+    return false;
+  }
+
+  let nextPosition = getNextPosition({ position, movement });
+  let nextTile = map[nextPosition.y][nextPosition.x];
+
+  // wall
+  if (nextTile === '#') {
+    return false;
+  }
+
+  // empty space
+  if (nextTile === '.') {
+    return true;
+  }
+
+  // box
+  if (nextTile === '[' || nextTile === ']') {
+    const nextEmptyPosittion = getNextEmptyPosition({
+      map,
+      position,
+      movement,
+    });
+    return nextEmptyPosittion !== undefined;
+  }
+
+  return false;
+};
+
+const processMovementsPartTwo = (data: Data): string[][] => {
+  const { map: originalMap, start, movements } = data;
+
+  const map = [...originalMap];
+  let position = start;
+
+  // printMapState({ map, title: 'Initial state:' });
+
+  for (const movement of movements) {
+    const canMove = checkCanMovePartTwo({ map, position, movement });
+    if (canMove) {
+      position = move({ map, position, movement });
+    }
+
+    // printMapState({ map, title: `Move ${movement}:` });
+    // if (!canMove) {
+    //   console.log(`can't move ${movement}\n`);
+    // }
+  }
+
+  return map;
+};
+
 const solvePartOne = (data: Data): number => {
   const map = processMovements(data);
   const coordinates = calculateGPSCoordinates(map);
@@ -301,12 +383,19 @@ const solvePartOne = (data: Data): number => {
 };
 
 const solvePartTwo = (data: Data): number => {
-  const total = 0;
+  const wideMap = generateWideMap(data.map);
+  const map = processMovementsPartTwo(data);
+
+  printMapState({ map: data.map, title: 'Original Map' });
+  printMapState({ map: wideMap, title: 'Wide Map' });
+
+  const coordinates = calculateGPSCoordinates(map, '[');
+  const total = coordinates.reduce((prev, curr) => prev + curr, 0);
   return total;
 };
 
 const main = () => {
-  const filename = 'day15/data.txt';
+  const filename = 'day15/test.txt';
   const fileContents = readFileContents(filename);
   const parsedData = parseFileContents(fileContents);
 
