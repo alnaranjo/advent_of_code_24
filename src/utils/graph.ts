@@ -1,3 +1,4 @@
+import { MinHeap } from './minHeap';
 import { Vector2 } from './vector2';
 
 export type Node<T> = { key: string; value: T; neighbors: Node<T>[] };
@@ -224,4 +225,108 @@ export const arePathsEqual = <T>(
   }
 
   return true;
+};
+
+export const dijkstra = <T>({
+  graph,
+  start,
+  end,
+  canTraverse,
+  getCost,
+}: {
+  graph: Graph<T>;
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+  canTraverse: (node: Node<T>) => boolean;
+  getCost?: (fromNode: Node<T>, toNode: Node<T>) => number;
+}): Node<T>[] => {
+  const startKey = getNodeKey(start.x, start.y);
+  const endKey = getNodeKey(end.x, end.y);
+
+  const distances: Map<string, number> = new Map();
+  const previous: Map<string, string | null> = new Map();
+
+  const priorityQueue = new MinHeap<{
+    key: string;
+    distance: number;
+  }>((a, b) => a.distance - b.distance);
+
+  const processed: Set<string> = new Set();
+
+  graph.forEach((_, key) => {
+    distances.set(key, Number.MAX_SAFE_INTEGER);
+    previous.set(key, null);
+  });
+
+  distances.set(startKey, 0);
+  priorityQueue.push({
+    key: startKey,
+    distance: 0,
+  });
+
+  let totalSteps = 0;
+
+  while (priorityQueue.size() > 0) {
+    // sort queue by lowest distance
+    const current = priorityQueue.pop()!;
+
+    if (processed.has(current.key)) {
+      continue;
+    }
+
+    processed.add(current.key);
+
+    totalSteps += 1;
+
+    // Path found, reconstrtuct path
+    if (current.key === endKey) {
+      let key: string | undefined = endKey;
+      const path: Node<T>[] = [];
+
+      while (key) {
+        const position = parseNodeKey(key);
+        const node = getNode(graph, position.x, position.y);
+        if (node) {
+          path.push(node);
+        }
+        key = previous.get(key) || undefined;
+      }
+
+      return path.reverse();
+    }
+
+    const currentPosition = parseNodeKey(current.key);
+    const currentNode = getNode(graph, currentPosition.x, currentPosition.y);
+
+    if (!currentNode) {
+      continue;
+    }
+
+    // Process neighbors
+    for (const neighbor of currentNode.neighbors) {
+      if (!canTraverse(neighbor)) {
+        continue;
+      }
+
+      const stepCost =
+        getCost !== undefined ? getCost(currentNode, neighbor) : 1;
+
+      const tentativeDistance =
+        (distances.get(current.key) ?? Number.MAX_SAFE_INTEGER) + stepCost;
+
+      if (
+        tentativeDistance <
+        (distances.get(neighbor.key) ?? Number.MAX_SAFE_INTEGER)
+      ) {
+        distances.set(neighbor.key, tentativeDistance);
+        previous.set(neighbor.key, current.key);
+        priorityQueue.push({
+          key: neighbor.key,
+          distance: tentativeDistance,
+        });
+      }
+    }
+  }
+
+  return [];
 };
