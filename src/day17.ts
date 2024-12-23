@@ -82,7 +82,7 @@ const getComboOperand = (state: ComputerState): number => {
     case 6:
       return state.registerC;
     default:
-      return -1;
+      return 0;
   }
 };
 
@@ -123,8 +123,18 @@ const printState = (state: ComputerState) => {
   console.log(message);
 };
 
+const xor = (first: number, second: number): number => {
+  const safeLimit = 2 << 29;
+  if (first <= safeLimit && second <= safeLimit) {
+    return first ^ second;
+  }
+  const bigFist = BigInt(first);
+  const bigSecond = BigInt(second);
+  return Number(bigFist ^ bigSecond);
+};
+
 const computeProgram = (state: ComputerState): number[] => {
-  printProgam(state);
+  // printProgam(state);
 
   const output: number[] = [];
   while (state.instructionPointer < state.program.length) {
@@ -153,7 +163,7 @@ const computeProgram = (state: ComputerState): number[] => {
       }
 
       case 'bxl': {
-        const result = state.registerB ^ literalOperand;
+        const result = xor(state.registerB, literalOperand);
         state.registerB = result;
         break;
       }
@@ -173,7 +183,7 @@ const computeProgram = (state: ComputerState): number[] => {
       }
 
       case 'bxc': {
-        const result = state.registerB ^ state.registerC;
+        const result = xor(state.registerB, state.registerC);
         state.registerB = result;
         break;
       }
@@ -209,13 +219,51 @@ const computeProgram = (state: ComputerState): number[] => {
   return output;
 };
 
+const cloneState = (state: ComputerState): ComputerState => {
+  return structuredClone(state);
+};
+
 const solvePartOne = (state: ComputerState): string => {
-  const output = computeProgram(state);
+  const clonedState = cloneState(state);
+  const output = computeProgram(clonedState);
   return output.join(',');
 };
 
-const solvePartTwo = (data: ComputerState): string => {
-  return '';
+const findQuineValue = (
+  state: ComputerState,
+  targets: number[],
+  candidate: number
+): number => {
+  if (targets.length === 0) {
+    return candidate;
+  }
+
+  const target = targets[targets.length - 1];
+  const start = 0o0;
+  const end = 0o7;
+
+  for (let i = start; i <= end; ++i) {
+    const newCandidate = candidate * 8 + i;
+
+    const clonedState = cloneState(state);
+    clonedState.registerA = newCandidate;
+    const output = computeProgram(clonedState);
+
+    if (output[0] === target) {
+      const result = findQuineValue(state, targets.slice(0, -1), newCandidate);
+      if (result > 0) {
+        return result;
+      }
+    }
+  }
+
+  return 0;
+};
+
+const solvePartTwo = (state: ComputerState): number => {
+  const targets = [...state.program];
+  const result = findQuineValue(state, targets, 0);
+  return result;
 };
 
 const main = () => {
