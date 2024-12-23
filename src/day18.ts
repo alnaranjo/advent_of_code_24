@@ -1,6 +1,6 @@
 import { readFileContents } from './utils/file';
+import { createGraph, dijkstra } from './utils/graph';
 import { Vector2 } from './utils/vector2';
-import { createGraph, findAllPaths, dijkstra, getNodeKey } from './utils/graph';
 
 type Data = {
   corruptedMemory: Vector2[];
@@ -46,20 +46,6 @@ const simulateMemoryCorruption = ({
   }
 
   return grid;
-};
-
-const printGrid = (grid: string[][]) => {
-  const height = grid.length;
-  const width = grid[0].length;
-
-  for (let y = 0; y < height; ++y) {
-    for (let x = 0; x < width; ++x) {
-      const tile = grid[y][x];
-      process.stdout.write(tile);
-    }
-    console.log();
-  }
-  console.log();
 };
 
 const solvePartOne = (data: Data): number => {
