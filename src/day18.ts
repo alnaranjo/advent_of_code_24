@@ -1,6 +1,6 @@
 import { readFileContents } from './utils/file';
 import { Vector2 } from './utils/vector2';
-import { createGraph, findAllPaths, dijkstra } from './utils/graph';
+import { createGraph, findAllPaths, dijkstra, getNodeKey } from './utils/graph';
 
 type Data = {
   corruptedMemory: Vector2[];
@@ -40,7 +40,7 @@ const simulateMemoryCorruption = ({
     .fill('.')
     .map(() => new Array(data.width).fill('.'));
 
-  for (let i = 0; i < iterations; ++i) {
+  for (let i = 0; i <= iterations; ++i) {
     const corruptedLocation = data.corruptedMemory[i];
     grid[corruptedLocation.y][corruptedLocation.x] = '#';
   }
@@ -63,9 +63,7 @@ const printGrid = (grid: string[][]) => {
 };
 
 const solvePartOne = (data: Data): number => {
-  console.log(data);
-
-  const memory = simulateMemoryCorruption({ data, iterations: 1024 });
+  const memory = simulateMemoryCorruption({ data, iterations: 1023 });
   const graph = createGraph(memory);
   const path = dijkstra({
     graph,
@@ -78,9 +76,26 @@ const solvePartOne = (data: Data): number => {
   return path.length - 1;
 };
 
-const solvePartTwo = (data: Data): number => {
-  const total = 0;
-  return total;
+const solvePartTwo = (data: Data): string => {
+  for (let i = 0; i < data.corruptedMemory.length; ++i) {
+    const memory = simulateMemoryCorruption({ data, iterations: i });
+
+    const graph = createGraph(memory);
+    const path = dijkstra({
+      graph,
+      start: { x: 0, y: 0 },
+      end: { x: data.width - 1, y: data.height - 1 },
+      canTraverse: (node) => node.value !== '#',
+    });
+
+    if (path.length === 0) {
+      const badLocation = data.corruptedMemory[i];
+      return `${badLocation.x},${badLocation.y}`;
+    }
+  }
+
+  // Don't count the start node
+  return '';
 };
 
 const main = () => {
