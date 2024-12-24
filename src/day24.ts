@@ -1,5 +1,4 @@
 import { readFileContents } from './utils/file';
-import { Vector2 } from './utils/vector2';
 
 type Gate = 'AND' | 'XOR' | 'OR';
 
