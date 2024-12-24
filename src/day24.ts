@@ -110,24 +110,37 @@ const processOperations = (data: Data): Map<string, number> => {
   return results;
 };
 
-const getNumberFromResults = (results: Map<string, number>): number => {
-  const keys = Array.from(results.keys()).filter((key) => key.startsWith('z'));
+const getBits = (data: Map<string, number>, prefix: string): number[] => {
+  const keys = Array.from(data.keys()).filter((key) => key.startsWith(prefix));
   keys.sort(sort);
 
   const bits: number[] = [];
   for (const key of keys) {
-    const value = results.get(key)!;
+    const value = data.get(key)!;
     bits.push(value);
   }
 
-  console.log(keys);
-  console.log(bits.join(''));
+  console.log({ keys, bits });
 
+  return bits;
+};
+
+const numberFromBits = (bits: number[]): number => {
   let integerValue = 0;
   for (const bit of bits) {
     integerValue = integerValue * 2 + bit;
   }
   return integerValue;
+};
+
+const numberToBits = (value: number): number[] => {
+  const binary = value.toString(2);
+  return binary.split('').map((value) => parseInt(value, 10));
+};
+
+const getNumberFromResults = (results: Map<string, number>): number => {
+  const bits = getBits(results, 'z');
+  return numberFromBits(bits);
 };
 
 const solvePartOne = (data: Data): number => {
@@ -137,12 +150,27 @@ const solvePartOne = (data: Data): number => {
 };
 
 const solvePartTwo = (data: Data): number => {
+  const result = processOperations(data);
+
+  const xBits = getBits(data.inputs, 'x');
+  const yBits = getBits(data.inputs, 'y');
+  const invalidZBits = getBits(result, 'z');
+
+  const xNumber = numberFromBits(xBits);
+  const yNumber = numberFromBits(yBits);
+
+  const zNumber = xNumber + yNumber;
+  const zBits = numberToBits(zNumber);
+
+  console.log({ xNumber, yNumber });
+  console.log({ zNumber, zBits, invalidZBits });
+
   let total = 0;
   return total;
 };
 
 const main = () => {
-  const filename = 'day24/data.txt';
+  const filename = 'day24/test.txt';
   const fileContents = readFileContents(filename);
   const parsedData = parseFileContents(fileContents);
 
